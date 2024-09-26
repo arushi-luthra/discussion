@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Portal</title>
+    <style>
+        /* Basic CSS setup */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e7f3f2;
+            color: #333;
+        }
+
+        .header {
+            background-color: #004d40;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Left Pane (Questions List) */
+        .left-pane {
+            flex: 1;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+
+        .left-pane h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #004d40;
+            text-align: center;
+        }
+
+        #questionList {
+            list-style: none;
+            padding: 0;
+        }
+
+        .question-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .question-item:hover {
+            background-color: #c8e6c9;
+            transform: scale(1.02);
+        }
+
+        /* Right Pane (Forms and Question Details) */
+        .right-pane {
+            flex: 2;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f5f5f5;
+        }
+
+        .right-pane h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #1a73e8;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input, textarea {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 1em;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar input {
+            padding: 8px;
+            width: 180px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-left: 10px;
+        }
+
+        .btn-new-question {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .btn-new-question:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* Question box styling */
+        .question-box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .question-box:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Discussion Portal
+    </div>
+
+    <div class="container">
+        <!-- Left Pane: Questions List -->
+        <div class="left-pane">
+            <div class="question-header">
+                <button class="btn-new-question" onclick="showForm()">New Question</button>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search questions..." aria-label="Search questions">
+                </div>
+            </div>
+
+            <ul id="questionList">
+                <!-- Questions will appear here dynamically -->
+            </ul>
+        </div>
+
+        <!-- Right Pane: Question Form -->
+        <div class="right-pane" id="rightPane">
+            <h2>Welcome to Discussion Portal!</h2>
+            <p>Enter a subject and question to get started</p>
+
+            <form id="questionForm">
+                <label for="title">Enter a subject:</label>
+                <input type="text" id="title" required>
+
+                <label for="question">Your question:</label>
+                <textarea id="question" required></textarea>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize an empty array to store questions
+        let questions = [];
+
+        // Function to render all questions in the left pane
+        function renderQuestions() {
+            const questionList = document.getElementById("questionList");
+            questionList.innerHTML = ''; // Clear the current list
+
+            questions.forEach((q, index) => {
+                const questionItem = document.createElement("li");
+                questionItem.classList.add("question-box", "question-item");
+                questionItem.innerHTML = `<strong>${q.title}</strong><br>${q.question}`;
+                questionItem.setAttribute("data-index", index); // Store index of the question
+                questionItem.onclick = () => displayQuestionDetails(index); // Add click event
+                questionList.appendChild(questionItem); // Append the question to the left pane
+            });
+        }
+
+        // Event listener for form submission to add question
+        document.getElementById("questionForm").addEventListener("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const title = document.getElementById("title").value; // Get the title
+            const question = document.getElementById("question").value; // Get the question
+
+            if (title && question) {
+                // Add the question to the array
+                questions.push({ title, question, responses: [] });
+
+                // Render the updated question list in the left pane
+                renderQuestions();
+
+                // Clear the form fields after submission
+                document.getElementById("title").value = '';
+                document.getElementById("question").value = '';
+            }
+        });
+
+        // Function to display question details and response form
+        function displayQuestionDetails(index) {
+            const rightPane = document.getElementById("rightPane");
+            const question = questions[index];
+            rightPane.innerHTML = `
+                <h2>${question.title}</h2>
+                <p>${question.question}</p>
+                <h3>Responses:</h3>
+                <ul id="responseList"></ul>
+                <form id="responseForm">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" required>
+                    <label for="comment">Comment:</label>
+                    <textarea id="comment" required></textarea>
+                    <button type="submit">Submit Response</button>
+                </form>
+                <button onclick="resolveQuestion(${index})">Resolve</button>
+            `;
+
+            const responseForm = document.getElementById("responseForm");
+            responseForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const name = document.getElementById("name").value;
+                const comment = document.getElementById("comment").value;
+
+                // Add response to the question
+                if (name && comment) {
+                    question.responses.push({ name, comment });
+                    displayResponses(index);
+                    responseForm.reset(); // Clear the form
+                }
+            });
+
+            displayResponses(index); // Show existing responses
+        }
+
+        // Function to display responses for a specific question
+        function displayResponses(index) {
+            const responseList = document.getElementById("responseList");
+            responseList.innerHTML = ''; // Clear current responses
+
+            questions[index].responses.forEach(response => {
+                const responseItem = document.createElement("li");
+                responseItem.innerHTML = `<strong>${response.name}:</strong> ${response.comment}`;
+                responseList.appendChild(responseItem);
+            });
+        }
+
+        // Function to resolve a question
+        function resolveQuestion(index) {
+            questions.splice(index, 1); // Remove the question from the array
+            renderQuestions(); // Re-render the questions list
+            const rightPane = document.getElementById("rightPane");
+            rightPane.innerHTML = `
+                <h2>Welcome to Discussion Portal!</h2>
+                <p>Enter a subject and question to get started</p>
+                <form id="questionForm">
+                    <label for="title">Enter a subject:</label>
+                    <input type="text" id="title" required>
+                    <label for="question">Your question:</label>
+                    <textarea id="question" required></textarea>
+                    <button type="submit">Submit</button>
+                </form>
+            `; // Reset right pane
+        }
+
+        // Function to show the form (if needed)
+        function showForm() {
+            const rightPane = document.getElementById("rightPane");
+            rightPane.innerHTML = `
+                <h2>Enter a New Question</h2>
+                <form id="questionForm">
+                    <label for="title">Enter a subject:</label>
+                    <input type="text" id="title" required>
+
+                    <label for="question">Your question:</label>
+                    <textarea id="question" required></textarea>
+
+                    <button type="submit">Submit</button>
+                </form>
+            `;
+        }
+    </script>
+</body>
+</html>
